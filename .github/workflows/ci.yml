@@ -29,7 +29,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run Clippy
-        run: cargo clippy --all-targets
+        run: cargo clippy --all-targets -- -D clippy::correctness -D clippy::suspicious -A clippy::style -A clippy::complexity -A clippy::perf
 
       - name: Build project
         run: cargo build --verbose
