@@ -10,7 +10,7 @@ on:
 
 # List of jobs to run
 jobs:
-  # A job named "test"
+  # Basic, fundamental tests and unit tests
   test:
     # Tell GitHub to run the job on macOS (latest version)
     runs-on: macos-latest
@@ -24,6 +24,12 @@ jobs:
 
       - name: Show Rust version
         run: rustc --version
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Build project
         run: cargo build --verbose
@@ -83,9 +89,8 @@ jobs:
             exit 1
           fi
 
-      - name: Check memory leaks
+      - name: Check for memory leaks
         run: |
-          # Check the running server process for leaked memory
           /usr/bin/leaks "$(cat server.pid)" > leaks.log 2>&1 || true
 
           cat leaks.log
