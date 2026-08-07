@@ -5,10 +5,10 @@ use std::collections::{HashMap, HashSet};
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub servers: Vec<ServerConfig>,
-    
+
     #[serde(default = "default_timeout_secs")]
     pub client_timeout_secs: u64,
-    
+
     #[serde(default)]
     pub admin: AdminConfig,
 }
@@ -244,4 +244,20 @@ fn default_admin_username() -> String {
 
 fn default_admin_password() -> String {
     "password123".to_string()
+}
+
+
+
+// Test test (test for testing that github actions are working as intended)
+#[test]
+fn allows_configured_method() {
+    let route = RouteConfig {
+        filename: None,
+        directory: None,
+        directory_listing: false,
+        methods: Some(vec!["GET".to_string()]),
+        redirect: None,
+        upload_dir: None,
+    };
+    assert!(route.check_method("GET").is_ok());
 }

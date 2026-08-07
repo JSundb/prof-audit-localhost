@@ -43,12 +43,12 @@ filename = "method_not_allowed.html"
 [servers.cgi_handlers]
 ".py" = "python3"
 
-  [[servers]]
-  server_address = "127.0.0.1"
-  ports = [8081]
-  server_name = "public"
-  root = "root"
-  admin_access = false
+[[servers]]
+server_address = "127.0.0.1"
+ports = [8081]
+server_name = "public"
+root = "root"
+admin_access = false
 
 [servers.routes."/"]
 methods = ["GET"]
@@ -67,11 +67,6 @@ filename = "./hello.py"
 [servers.routes."/broken"]
 filename = "./no_response.py"
 
-# Map extensions to CGI interpreter/command
-# Run using value "python3" if on mac, "python" if on windows
-[servers.cgi_handlers]
-".py" = "python3"
-
 [servers.routes."/tetris"]
 directory = "./site2"
 methods = ["GET"]
@@ -80,9 +75,14 @@ methods = ["GET"]
 directory = "./site3"
 methods = ["GET"]
 
-  [servers.routes."/GraphQL"]
-  directory = "./GraphQL"
-  methods = ["GET"]
+[servers.routes."/GraphQL"]
+directory = "./GraphQL"
+methods = ["GET"]
+
+# Map extensions to CGI interpreter/command
+# Run using value "python3" if on mac, "python" if on windows
+[servers.cgi_handlers]
+".py" = "python3"
 
 [admin]
 username = "admin"
