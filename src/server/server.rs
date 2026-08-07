@@ -250,6 +250,7 @@ impl Server {
             Ok(0) => {
                 return Ok(false); // connection closed
             }
+
             Ok(_) => {
                 if let Some(request) = client.parse_request() {
                     client.should_close = request
@@ -263,6 +264,12 @@ impl Server {
                 }
                 Ok(true) // keep connection open
             }
+
+            // Keep client when no data is available instead of kicking them out by giving that error Ok(0)
+            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
+                Ok(true)
+            }
+
             Err(e) => {
                 eprintln!("[!] Error reading from {}: {}", client.peer_addr, e);
                 let _ = client.stream.shutdown(std::net::Shutdown::Both);

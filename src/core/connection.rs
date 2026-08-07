@@ -47,8 +47,6 @@ impl ClientConnection {
                 }
                 Ok(n)
             }
-            // Crude quick fix for checking if this is the cause of the availability problem
-            Err(e) if e.kind() == ErrorKind::WouldBlock => Ok(1), // No data yet
             Err(e) => Err(e),
         }
     }
