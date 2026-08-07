@@ -47,11 +47,12 @@ impl ClientConnection {
                 }
                 Ok(n)
             }
-            Err(e) if e.kind() == ErrorKind::WouldBlock => Ok(0), // No data yet
+            // Crude quick fix for checking if this is the cause of the availability problem
+            Err(e) if e.kind() == ErrorKind::WouldBlock => Ok(1), // No data yet
             Err(e) => Err(e),
         }
     }
-    
+
     pub fn parse_request(&mut self) -> Option<Request> {
         if let Some((request, consumed)) = Request::parse(&self.read_buffer) {
             self.read_buffer.drain(0..consumed);
