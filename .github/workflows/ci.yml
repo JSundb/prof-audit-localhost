@@ -1,0 +1,32 @@
+# Workflow name
+name: macOS CI
+
+# Run on the following events
+on:
+  push:
+  pull_request:
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+
+# List of jobs to run
+jobs:
+  # A job named "test"
+  test:
+    # Tell GitHub to run the job on macOS (latest version)
+    runs-on: macos-latest
+
+    # Sequentially runs all the steps in the job
+    steps:
+      # "actions/checkout" is a built-in action that feeds repo's code to the job's runner environment (macOS). v7 is just the version
+      # So without this the CI wouldn't have access to the repo's code in the first place, nothing to test
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Show Rust version
+        run: rustc --version
+
+      - name: Build project
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
