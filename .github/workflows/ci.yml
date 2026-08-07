@@ -30,3 +30,63 @@ jobs:
 
       - name: Run tests
         run: cargo test --verbose
+
+# Stress test job with siege
+stress:
+  # Run only after the normal test job has passed
+  needs: test
+  runs-on: macos-latest
+  timeout-minutes: 10
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    - name: Install Siege
+      run: brew install siege
+
+    - name: Build project
+      run: cargo build --release
+
+    - name: Start server
+      run: |
+        # & to release the terminal and run the server in the background
+        ./target/release/localhost > server.log 2>&1 &
+
+        # Store the process ID so the server can be stopped later
+        echo $! > server.pid
+
+        sleep 10
+
+    - name: Run Siege
+      run: |
+        # -b for benchmark mode, -c for concurrent users, -r for repetitions
+        siege -b -c 10 -r 50 http://127.0.0.1:8081/ > siege.log 2>&1 || true
+        cat siege.log
+
+        # Find the Availability line and grab the 2nd field (the percentage)
+        availability=$(awk '/Availability:/ { print $2 }' siege.log)
+
+        # Check for empty availability
+        if [ -z "$availability" ]; then
+          echo "Could not read Siege availability"
+          exit 1
+        fi
+
+        echo "Siege availability: $availability%"
+
+        # Use awk to check if the availability is at least 99.5%
+        if awk "BEGIN { exit !($availability >= 99.5) }"; then
+          echo "Availability requirement passed"
+        else
+          echo "Availability below required 99.5%"
+          exit 1
+        fi
+
+    - name: Stop server
+      # Always stop the server, even if Siege fails
+      if: always()
+      run: |
+        if [ -f server.pid ]; then
+          kill "$(cat server.pid)" || true
+        fi
