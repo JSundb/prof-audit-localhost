@@ -1,9 +1,10 @@
-use crate::server::ServerSocket;
 use crate::core::Response;
 use crate::server::handler::default_reason_phrase;
+use crate::server::ServerSocket;
 
 pub fn default_index_response(sockets: &Vec<ServerSocket>) -> Response {
-    let mut body = String::from(r#"<!DOCTYPE html>
+    let mut body = String::from(
+        r#"<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -11,14 +12,12 @@ pub fn default_index_response(sockets: &Vec<ServerSocket>) -> Response {
 </head>
 <body>
     <h1>Registered Servers & Routes</h1>
-"#);
+"#,
+    );
 
     for socket in sockets {
         for config in &socket.configs {
-            let server_name = config
-                .server_name
-                .as_deref()
-                .unwrap_or("(no name)");
+            let server_name = config.server_name.as_deref().unwrap_or("(no name)");
 
             body.push_str(&format!(
                 "<h2>Server: {} on {}:{}</h2>\n<ul>\n",
@@ -29,7 +28,11 @@ pub fn default_index_response(sockets: &Vec<ServerSocket>) -> Response {
 
             for (route, cfg) in &config.routes {
                 let hostname = if let Some(name) = &config.server_name {
-                    if !name.is_empty() { name.clone() } else { socket.addr.ip().to_string() }
+                    if !name.is_empty() {
+                        name.clone()
+                    } else {
+                        socket.addr.ip().to_string()
+                    }
                 } else {
                     socket.addr.ip().to_string()
                 };

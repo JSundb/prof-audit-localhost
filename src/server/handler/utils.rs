@@ -1,8 +1,8 @@
 use crate::config::ServerConfig;
 use crate::core::{Request, Response};
+use crate::server::error_response_from_config;
 use std::path::Path;
 use std::process::Command;
-use crate::server::error_response_from_config;
 
 /// Very basic MIME type guessing based on file extension.
 /// Extend as needed for your use case.
@@ -132,7 +132,7 @@ pub fn parse_cgi_output(output: &[u8], config: &ServerConfig) -> Response {
         (&output[..pos], &output[pos + 2..])
     } else {
         let resp = Response::new(200, "OK");
-        return resp.with_body(output.to_vec())
+        return resp.with_body(output.to_vec());
     };
 
     let header_text = String::from_utf8_lossy(header_bytes);
@@ -141,7 +141,9 @@ pub fn parse_cgi_output(output: &[u8], config: &ServerConfig) -> Response {
     let mut headers: Vec<(String, String)> = Vec::new();
 
     for line in header_text.lines() {
-        if line.trim().is_empty() { continue; }
+        if line.trim().is_empty() {
+            continue;
+        }
         if let Some((name, value)) = line.split_once(':') {
             let name = name.trim();
             let value = value.trim();
@@ -193,7 +195,9 @@ pub fn check_name_and_port(
 
     // Parse server name and port from host header
     let (server_name, host_port) = match host.rsplit_once(':') {
-        Some((name, port_str)) if !name.is_empty() && port_str.chars().all(|c| c.is_ascii_digit()) => {
+        Some((name, port_str))
+            if !name.is_empty() && port_str.chars().all(|c| c.is_ascii_digit()) =>
+        {
             let p = match port_str.parse::<u16>() {
                 Ok(v) => v,
                 Err(_) => {

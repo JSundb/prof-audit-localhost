@@ -1,8 +1,8 @@
-use crate::core::Response;
 use crate::config::ServerConfig;
+use crate::core::Response;
+use crate::server::handler::{default_reason_phrase, guess_mime_type};
 use std::fs;
 use std::path::Path;
-use crate::server::handler::{guess_mime_type, default_reason_phrase};
 
 /// Return an error response using a custom page if configured under `root/errors`.
 pub fn error_response_from_config(status: u16, config: &ServerConfig) -> Response {

@@ -1,14 +1,17 @@
-use std::os::fd::{RawFd, AsRawFd};
-use std::time::Instant;
-use std::io;
-use libc::{kqueue, kevent, kevent64_s, EV_ADD, EV_DELETE, EV_ENABLE, EVFILT_READ, EVFILT_WRITE};
 use crate::server::Server;
+use libc::{kevent, kevent64_s, kqueue, EVFILT_READ, EVFILT_WRITE, EV_ADD, EV_DELETE, EV_ENABLE};
+use std::io;
+use std::os::fd::{AsRawFd, RawFd};
+use std::time::Instant;
 
 /// Create a new kqueue descriptor
 pub fn create_kqueue() -> RawFd {
     let kq = unsafe { kqueue() };
     if kq == -1 {
-        panic!("Failed to create kqueue: {}", std::io::Error::last_os_error());
+        panic!(
+            "Failed to create kqueue: {}",
+            std::io::Error::last_os_error()
+        );
     }
     kq
 }
@@ -99,14 +102,19 @@ pub fn process_event(server: &mut Server, kqueue: RawFd, ev: &kevent64_s) {
     }
 
     // 2. Handle existing client
-    if let Some(pos) = server.clients.iter().position(|c| c.stream.as_raw_fd() == fd) {
+    if let Some(pos) = server
+        .clients
+        .iter()
+        .position(|c| c.stream.as_raw_fd() == fd)
+    {
         let mut client = server.clients.swap_remove(pos);
 
         let keep = match ev.filter {
             EVFILT_READ => server.handle_client_read(&mut client),
             EVFILT_WRITE => server.handle_client_write(&mut client),
             _ => Ok(true), // Ignore unknown filters
-        }.unwrap_or(false);
+        }
+        .unwrap_or(false);
 
         if keep {
             if client.has_pending_write() {
@@ -114,7 +122,6 @@ pub fn process_event(server: &mut Server, kqueue: RawFd, ev: &kevent64_s) {
                     let _ = register_write(kqueue, fd);
                     client.write_registered = true;
                 }
-
             } else if ev.filter == EVFILT_WRITE {
                 // Only deregister if this was a write event and we know it's drained.
                 let _ = deregister_write(kqueue, fd);
@@ -140,7 +147,10 @@ fn cleanup_idle_clients(server: &mut Server) {
     server.clients.retain_mut(|client| {
         if let Some(last_req) = client.request_at {
             if now.duration_since(last_req) > server.client_timeout {
-                eprintln!("Closing client due to request timeout: {}", client.peer_addr);
+                eprintln!(
+                    "Closing client due to request timeout: {}",
+                    client.peer_addr
+                );
 
                 // Close the connection
                 let _ = client.stream.shutdown(std::net::Shutdown::Both);
@@ -188,7 +198,10 @@ pub fn run_loop(server: &mut Server) {
         };
 
         if nev < 0 {
-            eprintln!("[!] kqueue wait failed: {}", std::io::Error::last_os_error());
+            eprintln!(
+                "[!] kqueue wait failed: {}",
+                std::io::Error::last_os_error()
+            );
             continue;
         }
 

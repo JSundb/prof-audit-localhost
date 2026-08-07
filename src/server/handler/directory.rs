@@ -1,9 +1,13 @@
 use std::{fs, path::Path, path::PathBuf};
 
-use crate::core::Response;
 use crate::core::url_encode;
+use crate::core::Response;
 
-pub fn generate_directory_listing(dir: &Path, base_url_path: &str, upload_allowed: bool) -> Response {
+pub fn generate_directory_listing(
+    dir: &Path,
+    base_url_path: &str,
+    upload_allowed: bool,
+) -> Response {
     let mut html = String::from(
         r#"<!DOCTYPE html>
 <html lang="en">
@@ -19,7 +23,7 @@ pub fn generate_directory_listing(dir: &Path, base_url_path: &str, upload_allowe
     if upload_allowed {
         // 🆕 Upload form that posts back to the same directory path
         html.push_str(&format!(
-         r#"
+            r#"
 <form class="upload-form" action="{}" method="POST" enctype="multipart/form-data">
   <label>Upload files:</label>
   <input type="file" name="files" id="files" multiple><br><br>
@@ -33,7 +37,6 @@ pub fn generate_directory_listing(dir: &Path, base_url_path: &str, upload_allowe
             base_url_path
         ));
     }
-    
 
     html.push_str("<ul>");
 
@@ -75,9 +78,9 @@ pub fn generate_directory_listing(dir: &Path, base_url_path: &str, upload_allowe
             } else {
                 format!("{}/{}", base_url_path, encoded_name)
             };
-            
+
             let icon = if is_dir { "📁" } else { "📄" };
-            
+
             // Each item has a delete button with a data-filename attribute
             html.push_str(&format!(
                 r#"<li>
@@ -90,9 +93,10 @@ pub fn generate_directory_listing(dir: &Path, base_url_path: &str, upload_allowe
                 encoded_name = encoded_name
             ));
         }
-        
+
         // Add JS for delete buttons
-        html.push_str(r#"
+        html.push_str(
+            r#"
 <script>
 document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
@@ -139,8 +143,8 @@ document.querySelectorAll('.upload-form').forEach(form => {
     });
 });
 </script>
-"#);
-
+"#,
+        );
     } else {
         html.push_str("<li><em>Could not read directory</em></li>");
     }
@@ -156,7 +160,8 @@ pub fn resolve_target_path(
     request_uri: &str,
     route_prefix: &str,
     root_dir: &Path,
-    upload_dir: &str) -> PathBuf {
+    upload_dir: &str,
+) -> PathBuf {
     // Compute the relative subpath under the route
     let sub_path = request_uri.strip_prefix(&route_prefix).unwrap_or("");
     let sub_path = sub_path.trim_start_matches('/');

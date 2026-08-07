@@ -1,5 +1,5 @@
-use std::net::{SocketAddr, TcpListener};
 use std::io::{self, ErrorKind};
+use std::net::{SocketAddr, TcpListener};
 
 use crate::config::ServerConfig;
 use crate::ClientConnection;

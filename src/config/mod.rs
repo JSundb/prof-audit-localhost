@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use std::{fs, path::Path};
 use std::collections::{HashMap, HashSet};
+use std::{fs, path::Path};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -49,7 +49,7 @@ impl Config {
             if server.ports.is_empty() {
                 return Err(format!("Server at {} has no ports", server.server_address));
             }
-            
+
             if server.root.trim().is_empty() {
                 return Err(format!(
                     "Server at {} must have a non-empty 'root' directory defined",
@@ -148,12 +148,9 @@ impl Config {
                     if code.parse::<u16>().is_err() {
                         eprintln!("Warning: error code '{}' is not a valid u16", code);
                     }
-                    
+
                     let Some(filename) = &cfg.filename else {
-                        eprintln!(
-                            "Warning: custom error {} has no filename configured",
-                            code
-                        );
+                        eprintln!("Warning: custom error {} has no filename configured", code);
                         continue;
                     };
 
@@ -173,11 +170,11 @@ impl Config {
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, String> {
-        let content = fs::read_to_string(path)
-            .map_err(|e| format!("Failed to read config: {}", e))?;
+        let content =
+            fs::read_to_string(path).map_err(|e| format!("Failed to read config: {}", e))?;
 
-        let config: Config = toml::from_str(&content)
-            .map_err(|e| format!("Failed to parse TOML: {}", e))?;
+        let config: Config =
+            toml::from_str(&content).map_err(|e| format!("Failed to parse TOML: {}", e))?;
 
         config.validate()?;
 
@@ -201,7 +198,7 @@ pub struct RouteConfig {
 
     #[serde(default)]
     pub redirect: Option<RedirectConfig>, // optional redirect
-    
+
     #[serde(default)]
     pub upload_dir: Option<String>,
 }
@@ -219,10 +216,10 @@ impl RouteConfig {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct RedirectConfig {
-    pub to: String,               // Target URL or path
+    pub to: String, // Target URL or path
 
     #[serde(default = "default_redirect_code")]
-    pub code: u16,                // e.g., 301 or 302
+    pub code: u16, // e.g., 301 or 302
 }
 
 fn default_redirect_code() -> u16 {
@@ -245,8 +242,6 @@ fn default_admin_username() -> String {
 fn default_admin_password() -> String {
     "password123".to_string()
 }
-
-
 
 // Test test (test for testing that github actions are working as intended)
 #[test]

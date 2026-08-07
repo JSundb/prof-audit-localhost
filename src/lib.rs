@@ -1,7 +1,7 @@
 mod config;
-mod server;
 mod core;
+mod server;
 
 pub use config::Config;
-pub use server::Server;
 pub use core::{ClientConnection, Request, Response};
+pub use server::Server;

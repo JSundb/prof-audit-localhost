@@ -75,8 +75,13 @@ impl Admin {
             // Authentication successful; session already created
             let session_id = self.session_id.as_ref().unwrap().clone();
 
-            return Response::redirect("/".to_string(), 302)
-                .set_cookie("session_id", &session_id, Some("/"), None, true);
+            return Response::redirect("/".to_string(), 302).set_cookie(
+                "session_id",
+                &session_id,
+                Some("/"),
+                None,
+                true,
+            );
         }
 
         // Invalid credentials → show login page

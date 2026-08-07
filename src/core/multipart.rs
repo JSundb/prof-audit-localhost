@@ -23,16 +23,19 @@ pub fn extract_boundary(request: &Request) -> Option<String> {
 /// Extracts `filename="..."` from Content-Disposition header
 pub fn extract_filename(part: &str) -> Option<String> {
     let disposition_line = part.lines().find(|l| l.contains("Content-Disposition"))?;
-    disposition_line
-        .split(';')
-        .find_map(|segment| {
-            let segment = segment.trim();
-            if segment.starts_with("filename=") {
-                Some(segment.trim_start_matches("filename=").trim_matches('"').to_string())
-            } else {
-                None
-            }
-        })
+    disposition_line.split(';').find_map(|segment| {
+        let segment = segment.trim();
+        if segment.starts_with("filename=") {
+            Some(
+                segment
+                    .trim_start_matches("filename=")
+                    .trim_matches('"')
+                    .to_string(),
+            )
+        } else {
+            None
+        }
+    })
 }
 
 #[derive(Debug)]

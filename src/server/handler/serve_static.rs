@@ -1,10 +1,10 @@
+use crate::config::ServerConfig;
 use crate::core::Response;
 use crate::server::error_response_from_config;
-use crate::config::ServerConfig;
 
+use super::utils::guess_mime_type;
 use std::fs;
 use std::path::Path;
-use super::utils::guess_mime_type;
 
 pub fn serve_static_file(path: &Path, config: &ServerConfig) -> Response {
     match fs::read(path) {

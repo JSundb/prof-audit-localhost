@@ -1,12 +1,17 @@
+use super::utils::{parse_cgi_output, resolve_cgi_interpreter, set_cgi_env};
+use crate::config::ServerConfig;
+use crate::core::{Request, Response};
+use crate::server::error_response_from_config;
+use std::io::{Read, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
-use std::io::{Read, Write};
-use crate::core::{Request, Response};
-use crate::config::ServerConfig;
-use crate::server::error_response_from_config;
-use super::utils::{resolve_cgi_interpreter, set_cgi_env, parse_cgi_output};
 
-pub fn serve_cgi_file(path: &Path, request: &Request, config: &ServerConfig, local_port: u16) -> Response {
+pub fn serve_cgi_file(
+    path: &Path,
+    request: &Request,
+    config: &ServerConfig,
+    local_port: u16,
+) -> Response {
     let interpreter = match resolve_cgi_interpreter(path, config) {
         Some(cmd) => cmd,
         None => {

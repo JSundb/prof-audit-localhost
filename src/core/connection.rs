@@ -2,7 +2,7 @@ use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpStream};
 use std::time::Instant;
 
-use crate::core::{Request};
+use crate::core::Request;
 
 #[derive(Debug)]
 pub struct ClientConnection {
@@ -41,7 +41,7 @@ impl ClientConnection {
             Ok(0) => Ok(0), // Connection closed
             Ok(n) => {
                 self.read_buffer.extend_from_slice(&temp_buf[..n]);
-                
+
                 if self.request_at.is_none() {
                     self.request_at = Some(Instant::now());
                 }
@@ -56,7 +56,7 @@ impl ClientConnection {
             self.read_buffer.drain(0..consumed);
             self.request_at = None;
             return Some(request);
-        } 
+        }
         None
     }
 
@@ -78,9 +78,7 @@ impl ClientConnection {
                     // Can't write more now, try again later
                     return Ok(true);
                 }
-                Err(e) => {
-                    return Err(e)
-                },
+                Err(e) => return Err(e),
             }
         }
 
@@ -90,5 +88,4 @@ impl ClientConnection {
     pub fn has_pending_write(&self) -> bool {
         !self.write_buffer.is_empty()
     }
-
 }

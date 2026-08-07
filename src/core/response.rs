@@ -23,7 +23,8 @@ impl Response {
 
     pub fn with_body(mut self, body: impl Into<Vec<u8>>) -> Self {
         let body_bytes = body.into();
-        self.headers.insert("Content-Length".to_string(), body_bytes.len().to_string());
+        self.headers
+            .insert("Content-Length".to_string(), body_bytes.len().to_string());
         self.body = body_bytes;
         self
     }
@@ -84,7 +85,7 @@ impl Response {
         bytes.extend_from_slice(&self.body);
         bytes
     }
-    
+
     pub fn redirect(location: String, status_code: u16) -> Self {
         let reason_phrase = match status_code {
             301 => "Moved Permanently",

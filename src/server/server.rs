@@ -1,4 +1,4 @@
-﻿use std::collections::HashMap;
+use std::collections::HashMap;
 use std::io::{self};
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
@@ -9,12 +9,8 @@ use crate::core::{Request, Response};
 use crate::server::default_html::default_index_response;
 use crate::server::error_response_from_config;
 use crate::server::handler::{
-    execute_handler,
-    generate_directory_listing,
-    resolve_cgi_interpreter,
-    resolve_target_path,
-    serve_static_file,
-    Admin,
+    execute_handler, generate_directory_listing, resolve_cgi_interpreter, resolve_target_path,
+    serve_static_file, Admin,
 };
 use crate::server::match_route;
 use crate::server::run_loop;
@@ -205,15 +201,18 @@ impl Server {
             let base_dir = root_dir.join(dir);
             let sub_path = &request.uri[route_prefix.len()..];
             let sub_path = if sub_path.is_empty() { "/" } else { sub_path };
-            
+
             let full_path = base_dir.join(sub_path.trim_start_matches('/'));
             if full_path.is_dir() && !request.uri.ends_with('/') {
                 let location = format!("{}/", request.uri);
-                return Response::new(301, "Moved Permanently")
-                    .header("Location", &location);
+                return Response::new(301, "Moved Permanently").header("Location", &location);
             }
 
-            let route_prefix = format!("{}/{}", route_prefix.trim_end_matches('/'), sub_path.trim_start_matches('/'));
+            let route_prefix = format!(
+                "{}/{}",
+                route_prefix.trim_end_matches('/'),
+                sub_path.trim_start_matches('/')
+            );
 
             return self.handle_directory_request(
                 &base_dir,
@@ -266,9 +265,7 @@ impl Server {
             }
 
             // Keep client when no data is available instead of kicking them out by giving that error Ok(0)
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                Ok(true)
-            }
+            Err(e) if e.kind() == io::ErrorKind::WouldBlock => Ok(true),
 
             Err(e) => {
                 eprintln!("[!] Error reading from {}: {}", client.peer_addr, e);
@@ -280,9 +277,7 @@ impl Server {
 
     pub fn handle_client_write(&mut self, client: &mut ClientConnection) -> io::Result<bool> {
         match client.flush_write_buffer() {
-            Ok(true) => {
-                Ok(true)
-            }
+            Ok(true) => Ok(true),
             Ok(false) => {
                 println!("[*] Client {} closed write connection", client.peer_addr);
                 Ok(false)
@@ -328,12 +323,12 @@ impl Server {
 
             if file_size < MIN_UPLOAD_SIZE {
                 return Response::new(400, "Bad Request")
-                        .with_body("Upload too small. Please provide a larger file.")
+                    .with_body("Upload too small. Please provide a larger file.");
             }
 
             if file_size > MAX_UPLOAD_SIZE {
                 return Response::new(413, "Payload Too Large")
-                        .with_body("Upload too large. Maximum allowed size exceeded.")
+                    .with_body("Upload too large. Maximum allowed size exceeded.");
             }
 
             // Build full path under upload_directory

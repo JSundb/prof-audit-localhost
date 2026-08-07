@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::core::{extract_boundary, parse_multipart, MultipartPart, url_decode};
+use crate::core::{extract_boundary, parse_multipart, url_decode, MultipartPart};
 
 #[derive(Debug)]
 pub struct Request {
@@ -39,7 +39,7 @@ impl Request {
             consumed,
         ))
     }
-    
+
     pub fn is_multipart(&self) -> bool {
         self.headers
             .get("content-type")
@@ -50,7 +50,7 @@ impl Request {
         let boundary = extract_boundary(self)?;
         Some(parse_multipart(&self.body, &boundary))
     }
-    
+
     pub fn _has_cookies(&self) -> bool {
         self.headers.contains_key("cookie")
     }
