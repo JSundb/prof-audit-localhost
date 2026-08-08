@@ -22,6 +22,9 @@ pub struct ServerConfig {
     #[serde(default)]
     pub root: String,
 
+    #[serde(default = "default_client_max_body_size")]
+    pub client_max_body_size: usize,
+
     #[serde(default)]
     pub routes: HashMap<String, RouteConfig>,
 
@@ -35,6 +38,10 @@ pub struct ServerConfig {
 
     #[serde(default)]
     pub admin_access: bool,
+}
+
+fn default_client_max_body_size() -> usize {
+    10 * 1000 * 1000 // 10MB Default
 }
 
 fn default_timeout_secs() -> u64 {
@@ -255,6 +262,7 @@ mod tests {
             server_name: Some("localhost".to_string()),
             root: ".".to_string(),
             routes: HashMap::new(),
+            client_max_body_size: 10 * 1000 * 1000, // 10MB Default
             cgi_handlers: HashMap::new(),
             errors: HashMap::new(),
             admin_access: false,
@@ -372,5 +380,39 @@ mod tests {
         let config = config_with_servers(vec![server_one, server_two]);
 
         assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn uses_default_client_max_body_size_when_not_configured() {
+        // From string to make sure the construction itself, instead of the previously written helper, configures the right max body size
+        let config: Config = toml::from_str(
+            r#"
+            [[servers]]
+            server_address = "127.0.0.1"
+            ports = [8080]
+            server_name = "localhost"
+            root = "."
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(config.servers[0].client_max_body_size, 10_000_000);
+    }
+
+    #[test]
+    fn uses_configured_client_max_body_size() {
+        let config: Config = toml::from_str(
+            r#"
+            [[servers]]
+            server_address = "127.0.0.1"
+            ports = [8080]
+            server_name = "localhost"
+            root = "."
+            client_max_body_size = 123456
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(config.servers[0].client_max_body_size, 123456);
     }
 }

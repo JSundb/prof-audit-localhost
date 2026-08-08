@@ -5,6 +5,7 @@ server_address = "127.0.0.1"
 ports = [8080]
 server_name = "localhost"
 root = "root"
+client_max_body_size = 10000000
 admin_access = true
 
 # Default route: homepage / list of routes
@@ -48,6 +49,7 @@ server_address = "127.0.0.1"
 ports = [8081]
 server_name = "public"
 root = "root"
+client_max_body_size = 10000000
 admin_access = false
 
 [servers.routes."/"]

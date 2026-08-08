@@ -142,6 +142,11 @@ impl Server {
         let config = socket.resolve_config(host_header);
         let root_dir = Path::new(&config.root);
 
+        // Step 2.1: Check body size limit against configured limit
+        if request.body.len() > config.client_max_body_size {
+            return error_response_from_config(413, config);
+        }
+
         // Step 2.5: Check admin access requirement
         if config.admin_access {
             let is_authenticated = self.admin.validate_request(request);
@@ -297,7 +302,7 @@ impl Server {
     ) -> Response {
         // Min and max upload size limits (in bytes)
         const MIN_UPLOAD_SIZE: usize = 1; // 1 byte minimum
-        const MAX_UPLOAD_SIZE: usize = 1 * 1024 * 1024; // 10 MB maximum
+        const MAX_UPLOAD_FILE_SIZE: usize = 1 * 1000 * 1000; // 1 MB maximum
 
         if let Err(_) = std::fs::create_dir_all(upload_directory) {
             return error_response_from_config(500, config);
@@ -326,7 +331,7 @@ impl Server {
                     .with_body("Upload too small. Please provide a larger file.");
             }
 
-            if file_size > MAX_UPLOAD_SIZE {
+            if file_size > MAX_UPLOAD_FILE_SIZE {
                 return Response::new(413, "Payload Too Large")
                     .with_body("Upload too large. Maximum allowed size exceeded.");
             }
