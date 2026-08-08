@@ -43,7 +43,7 @@ fn default_timeout_secs() -> u64 {
 
 impl Config {
     pub fn validate(&self) -> Result<(), String> {
-        let mut seen_servers: HashSet<(u16, String)> = HashSet::new();
+        let mut seen_servers: HashSet<(String, u16, String)> = HashSet::new();
 
         for server in &self.servers {
             if server.ports.is_empty() {
@@ -65,18 +65,22 @@ impl Config {
                 // Empty string for nameless server
                 let name = server.server_name.clone().unwrap_or_default();
 
-                let key = (port, name.clone());
+                let key = (server.server_address.clone(), port, name.clone());
 
-                if !seen_servers.insert(key.clone()) {
+                if !seen_servers.insert(key) {
                     if name.is_empty() {
                         return Err(format!(
-                            "Duplicate nameless server configured on port {}",
+                            "Duplicate server name '{}' configured on {}:{}",
+                            name,
+                            server.server_address,
                             port
                         ));
                     } else {
                         return Err(format!(
-                            "Duplicate server name '{}' configured on port {}",
-                            name, port
+                            "Duplicate server name '{}' configured on {}:{}",
+                            name,
+                            server.server_address,
+                            port
                         ));
                     }
                 }
