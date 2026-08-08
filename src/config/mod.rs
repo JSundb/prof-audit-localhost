@@ -243,8 +243,6 @@ fn default_admin_password() -> String {
     "password123".to_string()
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -281,39 +279,39 @@ mod tests {
             upload_dir: None,
         }
     }
-    
+
     #[test]
     fn allows_only_configured_methods() {
         let route = configure_route_with_methods(&["GET"]);
         assert!(route.check_method("GET").is_ok());
         assert!(route.check_method("POST").is_err());
         assert!(route.check_method("DELETE").is_err());
-    
+
         let route = configure_route_with_methods(&["POST"]);
         assert!(route.check_method("GET").is_err());
         assert!(route.check_method("POST").is_ok());
         assert!(route.check_method("DELETE").is_err());
-    
+
         let route = configure_route_with_methods(&["DELETE"]);
         assert!(route.check_method("GET").is_err());
         assert!(route.check_method("POST").is_err());
         assert!(route.check_method("DELETE").is_ok());
-    
+
         let route = configure_route_with_methods(&["GET", "POST"]);
         assert!(route.check_method("GET").is_ok());
         assert!(route.check_method("POST").is_ok());
         assert!(route.check_method("DELETE").is_err());
-    
+
         let route = configure_route_with_methods(&["GET", "DELETE"]);
         assert!(route.check_method("GET").is_ok());
         assert!(route.check_method("POST").is_err());
         assert!(route.check_method("DELETE").is_ok());
-    
+
         let route = configure_route_with_methods(&["POST", "DELETE"]);
         assert!(route.check_method("GET").is_err());
         assert!(route.check_method("POST").is_ok());
         assert!(route.check_method("DELETE").is_ok());
-    
+
         let route = configure_route_with_methods(&["GET", "POST", "DELETE"]);
         assert!(route.check_method("GET").is_ok());
         assert!(route.check_method("POST").is_ok());
