@@ -243,16 +243,136 @@ fn default_admin_password() -> String {
     "password123".to_string()
 }
 
-// Test test (test for testing that github actions are working as intended)
-#[test]
-fn allows_configured_method() {
-    let route = RouteConfig {
-        filename: None,
-        directory: None,
-        directory_listing: false,
-        methods: Some(vec!["GET".to_string()]),
-        redirect: None,
-        upload_dir: None,
-    };
-    assert!(route.check_method("GET").is_ok());
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Default, valid configuration for tests to individually malform differently
+    fn valid_server_config() -> ServerConfig {
+        ServerConfig {
+            server_address: "127.0.0.1".to_string(),
+            ports: vec![8081],
+            server_name: Some("localhost".to_string()),
+            root: ".".to_string(),
+            routes: HashMap::new(),
+            cgi_handlers: HashMap::new(),
+            errors: HashMap::new(),
+            admin_access: false,
+        }
+    }
+
+    fn config_with_servers(servers: Vec<ServerConfig>) -> Config {
+        Config {
+            servers,
+            client_timeout_secs: 30,
+            admin: AdminConfig::default(),
+        }
+    }
+
+    fn configure_route_with_methods(methods: &[&str]) -> RouteConfig {
+        RouteConfig {
+            filename: None,
+            directory: None,
+            directory_listing: false,
+            methods: Some(methods.iter().map(|method| method.to_string()).collect()),
+            redirect: None,
+            upload_dir: None,
+        }
+    }
+    
+    #[test]
+    fn allows_only_configured_methods() {
+        let route = configure_route_with_methods(&["GET"]);
+        assert!(route.check_method("GET").is_ok());
+        assert!(route.check_method("POST").is_err());
+        assert!(route.check_method("DELETE").is_err());
+    
+        let route = configure_route_with_methods(&["POST"]);
+        assert!(route.check_method("GET").is_err());
+        assert!(route.check_method("POST").is_ok());
+        assert!(route.check_method("DELETE").is_err());
+    
+        let route = configure_route_with_methods(&["DELETE"]);
+        assert!(route.check_method("GET").is_err());
+        assert!(route.check_method("POST").is_err());
+        assert!(route.check_method("DELETE").is_ok());
+    
+        let route = configure_route_with_methods(&["GET", "POST"]);
+        assert!(route.check_method("GET").is_ok());
+        assert!(route.check_method("POST").is_ok());
+        assert!(route.check_method("DELETE").is_err());
+    
+        let route = configure_route_with_methods(&["GET", "DELETE"]);
+        assert!(route.check_method("GET").is_ok());
+        assert!(route.check_method("POST").is_err());
+        assert!(route.check_method("DELETE").is_ok());
+    
+        let route = configure_route_with_methods(&["POST", "DELETE"]);
+        assert!(route.check_method("GET").is_err());
+        assert!(route.check_method("POST").is_ok());
+        assert!(route.check_method("DELETE").is_ok());
+    
+        let route = configure_route_with_methods(&["GET", "POST", "DELETE"]);
+        assert!(route.check_method("GET").is_ok());
+        assert!(route.check_method("POST").is_ok());
+        assert!(route.check_method("DELETE").is_ok());
+    }
+
+    #[test]
+    fn rejects_server_with_no_ports() {
+        let mut server = valid_server_config();
+        server.ports = vec![];
+
+        let config = config_with_servers(vec![server]);
+
+        let error = config.validate().unwrap_err();
+        assert!(error.contains("has no ports"));
+    }
+
+    #[test]
+    fn rejects_server_with_empty_root() {
+        let mut server = valid_server_config();
+        server.root = "".to_string();
+
+        let config = config_with_servers(vec![server]);
+
+        let error = config.validate().unwrap_err();
+        assert!(error.contains("non-empty"));
+    }
+
+    #[test]
+    fn rejects_server_with_missing_root_directory() {
+        let mut server = valid_server_config();
+        server.root = "./directory_that_should_not_exist_123456789".to_string();
+
+        let config = config_with_servers(vec![server]);
+
+        let error = config.validate().unwrap_err();
+        assert!(error.contains("does not exist"));
+    }
+
+    #[test]
+    fn rejects_duplicate_server_name_on_same_port() {
+        let server_one = valid_server_config();
+        let server_two = valid_server_config();
+
+        let config = config_with_servers(vec![server_one, server_two]);
+
+        let error = config.validate().unwrap_err();
+        assert!(error.contains("Duplicate server name"));
+    }
+
+    #[test]
+    fn allows_same_server_name_and_port_on_different_addresses() {
+        let server_one = valid_server_config();
+
+        let mut server_two = valid_server_config();
+        server_two.server_address = "127.0.0.2".to_string();
+
+        let config = config_with_servers(vec![server_one, server_two]);
+
+        assert!(config.validate().is_ok());
+    }
 }
