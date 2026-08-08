@@ -71,16 +71,12 @@ impl Config {
                     if name.is_empty() {
                         return Err(format!(
                             "Duplicate server name '{}' configured on {}:{}",
-                            name,
-                            server.server_address,
-                            port
+                            name, server.server_address, port
                         ));
                     } else {
                         return Err(format!(
                             "Duplicate server name '{}' configured on {}:{}",
-                            name,
-                            server.server_address,
-                            port
+                            name, server.server_address, port
                         ));
                     }
                 }
@@ -356,7 +352,7 @@ mod tests {
     }
 
     #[test]
-    fn rejects_duplicate_server_name_on_same_port() {
+    fn rejects_duplicate_server_name_on_same_address_and_port() {
         let server_one = valid_server_config();
         let server_two = valid_server_config();
 
